@@ -76,7 +76,7 @@ export default function Report({ call, onNewGame }) {
                   <td className="p-2 text-gold">{p.revealed}</td>
                   <td className="p-2">{p.hints}</td>
                   <td className="p-2 text-bad">{p.wrong}</td>
-                  <td className="p-2">{p.zones_patched}/6</td>
+                  <td className="p-2">{p.zones_patched}/{p.zones_total}</td>
                   <td className="p-2 font-pixel text-[10px] text-gold">{p.xp}</td>
                 </tr>
               ))}

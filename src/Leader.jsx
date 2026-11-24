@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { pkGame, watchGame } from './api'
 import Report from './Report'
-import { HUB_URL, SITE_NAME, SITE_TAGLINE, TYPE_LABEL } from './config'
+import { BUGS_PER_ZONE, HUB_URL, SITE_NAME, SITE_TAGLINE, TYPE_LABEL, ZONES } from './config'
 import { readSession, saveSession } from './session'
 import { Button, CenterCard, Knight, Panel, Pixel } from './ui'
 
@@ -13,6 +13,7 @@ export default function Leader() {
   const [status, setStatus] = useState(null) // 'playing' | 'finished'
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [zones, setZones] = useState(ZONES.map((z) => z.id)) // the topics this game includes
 
   const call = useCallback((payload) => pkGame({ ...payload, game_id: session.gameId, host_token: session.hostToken }), [session])
 
@@ -27,7 +28,7 @@ export default function Leader() {
     setBusy(true)
     setError('')
     try {
-      const d = await pkGame({ action: 'create_game' })
+      const d = await pkGame({ action: 'create_game', zones })
       const s = { gameId: d.game.id, hostToken: d.host_token, joinCode: d.game.join_code }
       saveSession(s)
       setSession(s)
@@ -54,7 +55,37 @@ export default function Leader() {
           A CS2 game in C++: every zone of this RPG is bugged (linked lists, pointers, classes, recursion, sorting,
           searching). Students fix the code to repair the world. Solo or in small groups.
         </p>
-        <Button className="mt-6" disabled={busy} onClick={create}>{busy ? 'Booting…' : '▶ Start a game'}</Button>
+        <div className="mt-5 text-left">
+          <div className="flex items-baseline justify-between">
+            <p className="font-pixel text-[10px] uppercase tracking-wider text-info">Topics (zones)</p>
+            <span className="flex gap-3 text-xs">
+              <button type="button" className="text-info hover:underline" onClick={() => setZones(ZONES.map((z) => z.id))}>All</button>
+              <button type="button" className="text-info hover:underline" onClick={() => setZones([])}>None</button>
+            </span>
+          </div>
+          <ul className="mt-2 space-y-1.5">
+            {ZONES.map((z) => {
+              const on = zones.includes(z.id)
+              return (
+                <li key={z.id}>
+                  <label className={`flex cursor-pointer items-center gap-3 rounded-sm border-2 px-3 py-2 ${on ? 'border-ok bg-ok-soft' : 'border-line bg-panel hover:bg-hover'}`}>
+                    <input type="checkbox" checked={on} className="h-4 w-4 accent-green-400"
+                      onChange={() => setZones(on ? zones.filter((x) => x !== z.id) : ZONES.map((x) => x.id).filter((x) => x === z.id || zones.includes(x)))} />
+                    <span className="text-xl">{z.emoji}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-bold">{z.topic}</span>
+                      <span className="block text-xs text-muted">{z.name} · {BUGS_PER_ZONE} bugs</span>
+                    </span>
+                  </label>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="mt-2 text-xs text-muted">Students unlock the chosen zones one after another, in this order.</p>
+        </div>
+        <Button className="mt-5 w-full" disabled={busy || zones.length === 0} onClick={create}>
+          {busy ? 'Booting…' : zones.length === 0 ? 'Pick at least one topic' : `▶ Start a game (${zones.length * BUGS_PER_ZONE} bugs)`}
+        </Button>
         {error && <p className="mt-3 font-bold text-bad">{error}</p>}
         <a href={HUB_URL} className="mt-4 block text-sm text-info hover:underline">← All games</a>
       </CenterCard>
@@ -128,7 +159,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
         </div>
 
         <div className="space-y-5">
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(data?.zones.length ?? 6, 6)}, minmax(0, 1fr))` }}>
             {data?.zones.map((z, i) => (
               <div key={z.id} className="pixel-box rounded-sm bg-card p-2 text-center">
                 <p className="text-2xl">{z.emoji}</p>
