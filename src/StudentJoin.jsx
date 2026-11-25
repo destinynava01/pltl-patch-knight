@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { pkPlay } from './api'
+import { pkPlay, watchGame } from './api'
 import Code from './Code'
 import Scene from './Scene'
 import { KNIGHT_COLORS, SITE_NAME, TYPE_LABEL } from './config'
@@ -101,6 +101,13 @@ function World({ saved, onLeave }) {
   )
   useEffect(() => { load() }, [load])
 
+  // In the lobby, listen for the leader starting the game (and for topic changes)
+  const waiting = view?.game.status === 'setup'
+  useEffect(() => {
+    if (!waiting) return undefined
+    return watchGame(saved.gameId, ['progress'], load, 5000)
+  }, [waiting, saved, load])
+
   if (!view) return <CenterCard title={SITE_NAME}><p className="mt-4 text-muted">{error || 'Loading the world…'}</p></CenterCard>
 
   const { player, zones, summary } = view
@@ -125,12 +132,20 @@ function World({ saved, onLeave }) {
       </header>
 
       <div className="mx-auto max-w-5xl space-y-4 p-4">
-        {view.game.status !== 'playing' && <Panel className="text-center"><Pixel className="text-gold">The leader ended the game</Pixel><p className="mt-2">You patched {summary.fixed + summary.revealed} bugs and earned {summary.xp} XP. Great debugging!</p></Panel>}
+        {view.game.status === 'finished' && <Panel className="text-center"><Pixel className="text-gold">The leader ended the game</Pixel><p className="mt-2">You patched {summary.fixed + summary.revealed} bugs and earned {summary.xp} XP. Great debugging!</p></Panel>}
         {error && <p className="font-bold text-bad">{error}</p>}
 
-        {!zone && <WorldMap zones={zones} summary={summary} onOpen={setZoneId} />}
-        {zone && !bugId && <ZoneView zone={zone} flash={flash} onBack={() => setZoneId(null)} onOpenBug={setBugId} />}
-        {zone && bugId && (
+        {waiting && (
+          <Panel className="text-center">
+            <p className="text-5xl"><span className="bob"><Knight color={player.color} size={72} /></span></p>
+            <Pixel className="mt-3 text-gold">Get ready, knight!</Pixel>
+            <p className="mt-2 text-muted">You&apos;re in. The leader is picking the topics and will start the game in a moment.</p>
+            <p className="mt-4 text-sm">Coming up: {zones.map((z) => `${z.emoji} ${z.topic}`).join(' · ')}</p>
+          </Panel>
+        )}
+        {!waiting && !zone && <WorldMap zones={zones} summary={summary} onOpen={setZoneId} />}
+        {!waiting && zone && !bugId && <ZoneView zone={zone} flash={flash} onBack={() => setZoneId(null)} onOpenBug={setBugId} />}
+        {!waiting && zone && bugId && (
           <BugView
             key={bugId}
             saved={saved}

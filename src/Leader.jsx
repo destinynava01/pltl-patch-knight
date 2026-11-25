@@ -6,14 +6,13 @@ import { BUGS_PER_ZONE, HUB_URL, SITE_NAME, SITE_TAGLINE, TYPE_LABEL, ZONES } fr
 import { readSession, saveSession } from './session'
 import { Button, CenterCard, Knight, Panel, Pixel } from './ui'
 
-// The leader: start a game (students join any time with the code), watch the class dashboard on the projector,
-// then end the game for the report. The game is remembered in this tab, so a refresh brings it back.
+// The leader: open a lobby (students join with the code while the leader picks the topics), start the game,
+// watch the class dashboard on the projector, then end it for the report. The game is remembered in this tab.
 export default function Leader() {
   const [session, setSession] = useState(readSession)
-  const [status, setStatus] = useState(null) // 'playing' | 'finished'
+  const [status, setStatus] = useState(null) // 'setup' (the lobby) | 'playing' | 'finished'
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [zones, setZones] = useState(ZONES.map((z) => z.id)) // the topics this game includes
 
   const call = useCallback((payload) => pkGame({ ...payload, game_id: session.gameId, host_token: session.hostToken }), [session])
 
@@ -28,11 +27,11 @@ export default function Leader() {
     setBusy(true)
     setError('')
     try {
-      const d = await pkGame({ action: 'create_game', zones })
+      const d = await pkGame({ action: 'create_game' })
       const s = { gameId: d.game.id, hostToken: d.host_token, joinCode: d.game.join_code }
       saveSession(s)
       setSession(s)
-      setStatus('playing')
+      setStatus('setup')
     } catch (e) {
       setError(e.message)
     } finally {
@@ -55,37 +54,7 @@ export default function Leader() {
           A CS2 game in C++: every zone of this RPG is bugged (linked lists, pointers, classes, recursion, sorting,
           searching). Students fix the code to repair the world. Solo or in small groups.
         </p>
-        <div className="mt-5 text-left">
-          <div className="flex items-baseline justify-between">
-            <p className="font-pixel text-[10px] uppercase tracking-wider text-info">Topics (zones)</p>
-            <span className="flex gap-3 text-xs">
-              <button type="button" className="text-info hover:underline" onClick={() => setZones(ZONES.map((z) => z.id))}>All</button>
-              <button type="button" className="text-info hover:underline" onClick={() => setZones([])}>None</button>
-            </span>
-          </div>
-          <ul className="mt-2 space-y-1.5">
-            {ZONES.map((z) => {
-              const on = zones.includes(z.id)
-              return (
-                <li key={z.id}>
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-sm border-2 px-3 py-2 ${on ? 'border-ok bg-ok-soft' : 'border-line bg-panel hover:bg-hover'}`}>
-                    <input type="checkbox" checked={on} className="h-4 w-4 accent-green-400"
-                      onChange={() => setZones(on ? zones.filter((x) => x !== z.id) : ZONES.map((x) => x.id).filter((x) => x === z.id || zones.includes(x)))} />
-                    <span className="text-xl">{z.emoji}</span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-bold">{z.topic}</span>
-                      <span className="block text-xs text-muted">{z.name} · {BUGS_PER_ZONE} bugs</span>
-                    </span>
-                  </label>
-                </li>
-              )
-            })}
-          </ul>
-          <p className="mt-2 text-xs text-muted">Students unlock the chosen zones one after another, in this order.</p>
-        </div>
-        <Button className="mt-5 w-full" disabled={busy || zones.length === 0} onClick={create}>
-          {busy ? 'Booting…' : zones.length === 0 ? 'Pick at least one topic' : `▶ Start a game (${zones.length * BUGS_PER_ZONE} bugs)`}
-        </Button>
+        <Button className="mt-6" disabled={busy} onClick={create}>{busy ? 'Booting…' : '▶ Open the lobby'}</Button>
         {error && <p className="mt-3 font-bold text-bad">{error}</p>}
         <a href={HUB_URL} className="mt-4 block text-sm text-info hover:underline">← All games</a>
       </CenterCard>
@@ -96,10 +65,46 @@ export default function Leader() {
   return <Dashboard session={session} call={call} onEnded={() => setStatus('finished')} onNewGame={newGame} />
 }
 
+// The topic checklist: the zones, in world order (students unlock the chosen ones in this order)
+function TopicPicker({ value, onChange }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <Pixel>Topics (zones)</Pixel>
+        <span className="flex gap-3 text-xs">
+          <button type="button" className="text-info hover:underline" onClick={() => onChange(ZONES.map((z) => z.id))}>All</button>
+          <button type="button" className="text-info hover:underline" onClick={() => onChange([])}>None</button>
+        </span>
+      </div>
+      <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
+        {ZONES.map((z) => {
+          const on = value.includes(z.id)
+          return (
+            <li key={z.id}>
+              <label className={`flex cursor-pointer items-center gap-3 rounded-sm border-2 px-3 py-2 ${on ? 'border-ok bg-ok-soft' : 'border-line bg-panel hover:bg-hover'}`}>
+                <input type="checkbox" checked={on} className="h-4 w-4 accent-green-400"
+                  onChange={() => onChange(on ? value.filter((x) => x !== z.id) : ZONES.map((x) => x.id).filter((x) => x === z.id || value.includes(x)))} />
+                <span className="text-xl">{z.emoji}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-bold">{z.topic}</span>
+                  <span className="block text-xs text-muted">{z.name} · {BUGS_PER_ZONE} bugs</span>
+                </span>
+              </label>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="mt-2 text-xs text-muted">Students unlock the chosen zones one after another, in this order.</p>
+    </div>
+  )
+}
+
 function Dashboard({ session, call, onEnded, onNewGame }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => Date.now())
+  const [topics, setTopics] = useState(null) // the checklist while it's being edited (null = not editing)
+  const [busy, setBusy] = useState(false)
 
   const load = useCallback(() => call({ action: 'dashboard' }).then((d) => { setData({ ...d, offset: Date.parse(d.server_now) - Date.now() }); setError('') }).catch((e) => setError(e.message)), [call])
   useEffect(() => {
@@ -113,6 +118,23 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
     try { await call({ action: 'end_game' }); onEnded() } catch (e) { setError(e.message) }
   }
 
+  const inLobby = data?.game.status === 'setup'
+  const chosen = topics ?? data?.game.zones ?? ZONES.map((z) => z.id)
+
+  async function saveTopics(start) {
+    setBusy(true)
+    setError('')
+    try {
+      await call({ action: start ? 'start_game' : 'set_zones', zones: chosen })
+      setTopics(null)
+      await load()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const joinUrl = `${window.location.origin}/join?code=${session.joinCode}`
   const serverNow = now + (data?.offset ?? 0)
 
@@ -123,11 +145,11 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
           <Knight size={44} />
           <div>
             <h1 className="font-pixel text-lg text-ok">{SITE_NAME}</h1>
-            <p className="font-pixel text-[9px] text-muted">CLASS DASHBOARD · {data?.players.length ?? 0} KNIGHT{data?.players.length === 1 ? '' : 'S'}</p>
+            <p className="font-pixel text-[9px] text-muted">{inLobby ? 'LEADER LOBBY' : 'CLASS DASHBOARD'} · {data?.players.length ?? 0} KNIGHT{data?.players.length === 1 ? '' : 'S'}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="danger" onClick={end}>■ End game</Button>
+          {!inLobby && <Button variant="danger" onClick={end}>■ End game</Button>}
           <Button variant="outline" onClick={() => window.confirm('Close this game and start a new one? Progress is lost.') && onNewGame()}>New game</Button>
         </div>
       </header>
@@ -159,6 +181,35 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
         </div>
 
         <div className="space-y-5">
+          {inLobby && (
+            <Panel>
+              <h2 className="font-pixel text-sm text-gold">Pick the topics, then start</h2>
+              <p className="mt-1 text-sm text-muted">Students can join now; they wait on a &ldquo;get ready&rdquo; screen until you start.</p>
+              <div className="mt-3"><TopicPicker value={chosen} onChange={setTopics} /></div>
+              <Button className="mt-4 w-full" disabled={busy || chosen.length === 0} onClick={() => saveTopics(true)}>
+                {busy ? 'Starting…' : chosen.length === 0 ? 'Pick at least one topic' : `▶ Start the game (${chosen.length * BUGS_PER_ZONE} bugs)`}
+              </Button>
+            </Panel>
+          )}
+          {!inLobby && data && (
+            <Panel>
+              {topics === null ? (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm"><span className="font-pixel text-[9px] text-info">TOPICS </span>{ZONES.filter((z) => data.game.zones.includes(z.id)).map((z) => `${z.emoji} ${z.topic}`).join(' · ')}</p>
+                  <button type="button" onClick={() => setTopics(data.game.zones)} className="font-pixel text-[9px] text-info hover:underline">Change topics</button>
+                </div>
+              ) : (
+                <>
+                  <TopicPicker value={chosen} onChange={setTopics} />
+                  <div className="mt-3 flex gap-2">
+                    <Button disabled={busy || chosen.length === 0} onClick={() => saveTopics(false)}>{busy ? 'Saving…' : 'Save topics'}</Button>
+                    <Button variant="outline" onClick={() => setTopics(null)}>Cancel</Button>
+                  </div>
+                  <p className="mt-2 text-xs text-muted">Changes apply right away. Students keep the bugs they already fixed.</p>
+                </>
+              )}
+            </Panel>
+          )}
           <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(data?.zones.length ?? 6, 6)}, minmax(0, 1fr))` }}>
             {data?.zones.map((z, i) => (
               <div key={z.id} className="pixel-box rounded-sm bg-card p-2 text-center">
@@ -173,6 +224,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
           <Panel>
             <Pixel>Knights</Pixel>
             {data && data.players.length === 0 && <p className="mt-3 text-muted">Waiting for knights to join…</p>}
+            {inLobby && data?.players.length > 0 && <p className="mt-2 text-sm text-muted">These knights are in and waiting for you to start.</p>}
             <ul className="mt-3 space-y-2">
               {data?.players.map((p, rank) => {
                 const idle = serverNow - Date.parse(p.last_seen) > 3 * 60 * 1000
