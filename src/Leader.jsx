@@ -4,7 +4,7 @@ import { SLIDES as HOW_TO_SLIDES } from './howToSlides'
 import { QRCodeSVG } from 'qrcode.react'
 import { pkGame, watchGame } from './api'
 import Report from './Report'
-import { BUGS_PER_ZONE, HUB_URL, SITE_NAME, SITE_TAGLINE, TYPE_LABEL, ZONES } from './config'
+import { BANK_SIZE, CAPS, COURSES, DEFAULT_CAP, HUB_URL, SITE_NAME, SITE_TAGLINE, splitCap, TYPE_LABEL, ZONES } from './config'
 import { readSession, saveSession } from './session'
 import { Button, CenterCard, Knight, Panel, Pixel } from './ui'
 
@@ -53,8 +53,9 @@ export default function Leader() {
         <p className="mt-4"><span className="bob"><Knight size={72} /></span></p>
         <p className="mt-3 font-pixel text-sm leading-relaxed text-gold">{SITE_TAGLINE}</p>
         <p className="mt-3 text-muted">
-          A CS2 game in C++: every zone of this RPG is bugged (linked lists, pointers, classes, recursion, sorting,
-          searching). Students fix the code to repair the world. Solo or in small groups.
+          A C++ game for CS1 review and CS2: every zone of this RPG is bugged (variables, if/else, loops, functions,
+          arrays, then linked lists, pointers, classes, recursion, sorting, searching). Students fix the code to repair
+          the world. Solo or in small groups.
         </p>
         <Button className="mt-6" disabled={busy} onClick={create}>{busy ? 'Booting…' : '▶ Open the lobby'}</Button>
         {error && <p className="mt-3 font-bold text-bad">{error}</p>}
@@ -67,8 +68,9 @@ export default function Leader() {
   return <Dashboard session={session} call={call} onEnded={() => setStatus('finished')} onNewGame={newGame} />
 }
 
-// The topic checklist: the zones, in world order (students unlock the chosen ones in this order)
+// The topic checklist: the zones, in world order, grouped by course (students unlock the chosen ones in this order)
 function TopicPicker({ value, onChange }) {
+  const inOrder = (ids) => ZONES.map((z) => z.id).filter((id) => ids.includes(id))
   return (
     <div>
       <div className="flex items-baseline justify-between">
@@ -78,8 +80,20 @@ function TopicPicker({ value, onChange }) {
           <button type="button" className="text-info hover:underline" onClick={() => onChange([])}>None</button>
         </span>
       </div>
-      <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
-        {ZONES.map((z) => {
+      {COURSES.map((course) => {
+        const zones = ZONES.filter((z) => z.course === course.id)
+        const allOn = zones.every((z) => value.includes(z.id))
+        return (
+      <div key={course.id} className="mt-3">
+      <div className="flex items-baseline justify-between">
+        <p className="font-pixel text-[0.7rem] text-gold">{course.label.toUpperCase()}</p>
+        <button type="button" className="text-sm text-info hover:underline"
+          onClick={() => onChange(allOn ? value.filter((id) => !zones.some((z) => z.id === id)) : inOrder([...value, ...zones.map((z) => z.id)]))}>
+          {allOn ? `Clear ${course.id}` : `All of ${course.id}`}
+        </button>
+      </div>
+      <ul className="mt-1.5 grid gap-1.5 sm:grid-cols-2">
+        {zones.map((z) => {
           const on = value.includes(z.id)
           return (
             <li key={z.id}>
@@ -89,14 +103,42 @@ function TopicPicker({ value, onChange }) {
                 <span className="text-xl">{z.emoji}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-bold">{z.topic}</span>
-                  <span className="block text-sm text-muted">{z.name} · {BUGS_PER_ZONE} bugs</span>
+                  <span className="block text-sm text-muted">{z.name} · bank of {BANK_SIZE}</span>
                 </span>
               </label>
             </li>
           )
         })}
       </ul>
+      </div>
+        )
+      })}
       <p className="mt-2 text-sm text-muted">Students unlock the chosen zones one after another, in this order.</p>
+    </div>
+  )
+}
+
+// How many bugs each student gets in the whole game, drawn at random from the chosen zones' banks
+function CapPicker({ value, onChange, zoneCount }) {
+  const split = zoneCount ? splitCap(zoneCount, value) : []
+  const low = Math.min(...split)
+  const high = Math.max(...split)
+  return (
+    <div>
+      <Pixel>Bugs per student</Pixel>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {CAPS.map((n) => (
+          <button key={n} type="button" onClick={() => onChange(n)}
+            className={`rounded-sm border-2 px-3 py-2 font-pixel text-sm ${value === n ? 'border-ok bg-ok-soft text-ok' : 'border-line bg-panel hover:bg-hover'}`}>
+            {n}
+          </button>
+        ))}
+      </div>
+      <p className="mt-2 text-sm text-muted">
+        {zoneCount === 0 ? 'Pick topics to see the split.'
+          : value < zoneCount ? `Only the first ${value} of your ${zoneCount} topics get a bug each. Pick fewer topics or more bugs.`
+          : `${low === high ? low : `${low}–${high}`} bug${high === 1 ? '' : 's'} from each topic, picked at random for every student, so neighbors get different bugs.`}
+      </p>
     </div>
   )
 }
@@ -106,6 +148,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => Date.now())
   const [topics, setTopics] = useState(null) // the checklist while it's being edited (null = not editing)
+  const [cap, setCap] = useState(null) // bugs per student, while it's being picked in the lobby (null = the saved one)
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(() => call({ action: 'dashboard' }).then((d) => { setData({ ...d, offset: Date.parse(d.server_now) - Date.now() }); setError('') }).catch((e) => setError(e.message)), [call])
@@ -122,13 +165,16 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
 
   const inLobby = data?.game.status === 'setup'
   const chosen = topics ?? data?.game.zones ?? ZONES.map((z) => z.id)
+  const chosenCap = cap ?? data?.game.question_cap ?? DEFAULT_CAP
 
   async function saveTopics(start) {
     setBusy(true)
     setError('')
     try {
-      await call({ action: start ? 'start_game' : 'set_zones', zones: chosen })
+      // The number of bugs per student is set in the lobby; after the start only the topics can change
+      await call({ action: start ? 'start_game' : 'set_zones', zones: chosen, ...(inLobby ? { question_cap: chosenCap } : {}) })
       setTopics(null)
+      setCap(null)
       await load()
     } catch (e) {
       setError(e.message)
@@ -190,8 +236,9 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
               <h2 className="font-pixel text-sm text-gold">Pick the topics, then start</h2>
               <p className="mt-1 text-sm text-muted">Students can join now; they wait on a &ldquo;get ready&rdquo; screen until you start.</p>
               <div className="mt-3"><TopicPicker value={chosen} onChange={setTopics} /></div>
+              <div className="mt-4"><CapPicker value={chosenCap} onChange={setCap} zoneCount={chosen.length} /></div>
               <Button className="mt-4 w-full" disabled={busy || chosen.length === 0} onClick={() => saveTopics(true)}>
-                {busy ? 'Starting…' : chosen.length === 0 ? 'Pick at least one topic' : `▶ Start the game (${chosen.length * BUGS_PER_ZONE} bugs)`}
+                {busy ? 'Starting…' : chosen.length === 0 ? 'Pick at least one topic' : `▶ Start the game (${chosenCap} bugs per student)`}
               </Button>
             </Panel>
           )}
@@ -199,7 +246,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
             <Panel>
               {topics === null ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm"><span className="font-pixel text-[0.7rem] text-info">TOPICS </span>{ZONES.filter((z) => data.game.zones.includes(z.id)).map((z) => `${z.emoji} ${z.topic}`).join(' · ')}</p>
+                  <p className="text-sm"><span className="font-pixel text-[0.7rem] text-info">TOPICS </span>{ZONES.filter((z) => data.game.zones.includes(z.id)).map((z) => `${z.emoji} ${z.topic}`).join(' · ')}{data.game.question_cap ? ` · ${data.game.question_cap} bugs per student` : ''}</p>
                   <button type="button" onClick={() => setTopics(data.game.zones)} className="font-pixel text-[0.7rem] text-info hover:underline">Change topics</button>
                 </div>
               ) : (
@@ -209,7 +256,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
                     <Button disabled={busy || chosen.length === 0} onClick={() => saveTopics(false)}>{busy ? 'Saving…' : 'Save topics'}</Button>
                     <Button variant="outline" onClick={() => setTopics(null)}>Cancel</Button>
                   </div>
-                  <p className="mt-2 text-sm text-muted">Changes apply right away. Students keep the bugs they already fixed.</p>
+                  <p className="mt-2 text-sm text-muted">Changes apply right away. Each student's {data.game.question_cap ?? ''} bugs are re-split across the new topics; bugs they already fixed still count if they're in their new set.</p>
                 </>
               )}
             </Panel>

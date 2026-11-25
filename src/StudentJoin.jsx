@@ -164,7 +164,7 @@ function World({ saved, onLeave }) {
   )
 }
 
-// The world: six zones on a path; locked ones are dark until the one before is patched
+// The world: the game's zones on a path; locked ones are dark until the one before is patched
 function WorldMap({ zones, summary, onOpen }) {
   return (
     <>
