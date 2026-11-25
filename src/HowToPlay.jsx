@@ -1,21 +1,30 @@
 import { useEffect, useState } from 'react'
 
-// A visual "How to play" guide for the projector, shown when a game starts. Slides with picture mock-ups of what
-// students will see. Leaders can skip it, turn it off on this computer, or reopen it with the "? How to play"
-// button. The same file is in every PLTL game site; each game passes its own slides and color.
+// A visual "How to play" guide for the projector, with picture mock-ups of what students will see. Leaders can
+// skip it, turn it off on this computer, or reopen it with the "? How to play" button. The same file is in every
+// PLTL game site; each game passes its own slides and color.
 //   site:   a short id for this game ("bakery"), for remembering "don't show again"
-//   gameId: the current game, so the guide opens once per game
+//   gameId: the current game, so the guide opens by itself once per game
 //   slides: [{ title, text, art }]  (art is JSX)
-export default function HowToPlay({ site, gameId, name, accent = '#38bdf8', slides }) {
+// Two ways to use it:
+//   - On the game screen (default): opens once when the game starts, then stays a "? How to play" button.
+//     autoOpen={false} makes it only the button (for games with a running clock), and `note` is shown under the
+//     slides (e.g. "The clock keeps running").
+//   - Before the game starts: pass `open` and `onClose` (the lobby shows it when Start is pressed and starts the
+//     game when it closes, so no clock runs while the class watches).
+export default function HowToPlay({ site, gameId, name, accent = '#38bdf8', slides, open: openProp, onClose, autoOpen = true, note = '' }) {
   const skipKey = `pltlHowToSkip:${site}`
   const seenKey = `pltlHowToSeen:${site}:${gameId}`
-  const [open, setOpen] = useState(() => {
+  const controlled = openProp !== undefined
+  const [openState, setOpenState] = useState(() => {
+    if (controlled || !autoOpen) return false
     try {
       return !localStorage.getItem(skipKey) && !sessionStorage.getItem(seenKey)
     } catch {
       return true
     }
   })
+  const open = controlled ? openProp : openState
   const [step, setStep] = useState(0)
   const [neverAgain, setNeverAgain] = useState(false)
 
@@ -23,12 +32,12 @@ export default function HowToPlay({ site, gameId, name, accent = '#38bdf8', slid
     try {
       sessionStorage.setItem(seenKey, '1')
       if (neverAgain) localStorage.setItem(skipKey, '1')
-      else localStorage.removeItem(skipKey)
     } catch {
       // storage blocked: the guide just shows again next time
     }
-    setOpen(false)
     setStep(0)
+    if (controlled) onClose?.()
+    else setOpenState(false)
   }
 
   const last = step === slides.length - 1
@@ -44,8 +53,9 @@ export default function HowToPlay({ site, gameId, name, accent = '#38bdf8', slid
   })
 
   if (!open) {
+    if (controlled) return null
     return (
-      <button type="button" onClick={() => setOpen(true)}
+      <button type="button" onClick={() => setOpenState(true)}
         className="fixed bottom-4 left-4 z-40 rounded-full border border-white/20 bg-slate-900/90 px-4 py-2 text-sm font-bold text-white shadow-lg hover:bg-slate-800">
         ? How to play
       </button>
@@ -58,7 +68,7 @@ export default function HowToPlay({ site, gameId, name, accent = '#38bdf8', slid
       <section className="my-auto w-full max-w-4xl overflow-hidden rounded-3xl bg-slate-900 text-white shadow-2xl" style={{ boxShadow: `0 0 0 3px ${accent}55, 0 30px 80px rgb(0 0 0 / 0.6)` }}>
         <div className="flex items-center justify-between gap-3 px-6 pt-5">
           <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: accent }}>How to play · {name}</p>
-          <button type="button" onClick={close} className="rounded-full px-3 py-1 text-sm font-bold text-slate-300 hover:bg-white/10">Skip ✕</button>
+          <button type="button" onClick={close} className="rounded-full px-3 py-1 text-sm font-bold text-slate-300 hover:bg-white/10">{controlled ? 'Skip and start ✕' : 'Skip ✕'}</button>
         </div>
 
         <div className="grid gap-6 p-6 md:grid-cols-[1.1fr_1fr] md:items-center">
@@ -71,6 +81,7 @@ export default function HowToPlay({ site, gameId, name, accent = '#38bdf8', slid
             <p className="mt-3 text-lg leading-relaxed text-slate-200">{slide.text}</p>
           </div>
         </div>
+        {note && <p className="px-6 pb-3 text-sm font-bold" style={{ color: accent }}>{note}</p>}
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-6 py-4">
           <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-300">
@@ -83,7 +94,7 @@ export default function HowToPlay({ site, gameId, name, accent = '#38bdf8', slid
             </span>
             <button type="button" disabled={step === 0} onClick={() => setStep(step - 1)} className="rounded-xl px-4 py-2 font-bold text-slate-200 hover:bg-white/10 disabled:opacity-30">◀ Back</button>
             <button type="button" onClick={() => (last ? close() : setStep(step + 1))} className="rounded-xl px-5 py-2 font-black text-slate-950 hover:brightness-110" style={{ background: accent }}>
-              {last ? "Let's play! ▶" : 'Next ▶'}
+              {last ? (controlled ? 'Start the game ▶' : "Let's play! ▶") : 'Next ▶'}
             </button>
           </div>
         </div>
