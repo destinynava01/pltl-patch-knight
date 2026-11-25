@@ -3,6 +3,7 @@ import HowToPlay from './HowToPlay'
 import { SLIDES as HOW_TO_SLIDES } from './howToSlides'
 import { QRCodeSVG } from 'qrcode.react'
 import { pkGame, watchGame } from './api'
+import Peek from './Peek'
 import Report from './Report'
 import { BANK_SIZE, CAPS, COURSES, DEFAULT_CAP, HUB_URL, SITE_NAME, SITE_TAGLINE, splitCap, TYPE_LABEL, ZONES } from './config'
 import { readSession, saveSession } from './session'
@@ -150,6 +151,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
   const [topics, setTopics] = useState(null) // the checklist while it's being edited (null = not editing)
   const [cap, setCap] = useState(null) // bugs per student, while it's being picked in the lobby (null = the saved one)
   const [busy, setBusy] = useState(false)
+  const [peek, setPeek] = useState(null) // the knight the leader is peeking at
 
   const load = useCallback(() => call({ action: 'dashboard' }).then((d) => { setData({ ...d, offset: Date.parse(d.server_now) - Date.now() }); setError('') }).catch((e) => setError(e.message)), [call])
   useEffect(() => {
@@ -286,12 +288,18 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-bold">{p.name}{idle && <span className="ml-2 text-sm font-normal text-muted">(idle)</span>}</span>
                       <span className="text-sm text-muted">{p.finished ? '★ Patched the whole world' : p.zone ? `${p.zone.emoji} ${p.zone.name} · ${p.zone.fixed}/${p.zone.total}` : ''}</span>
+                      {!p.finished && p.current && (
+                        <span className={`block text-sm ${p.current.status === 'open' && p.current.misses >= 2 ? 'text-bad' : 'text-info'}`}>
+                          🐞 {p.current.title} · {TYPE_LABEL[p.current.type]}{p.current.status === 'fixed' ? ' · ✓ fixed' : p.current.misses ? ` · ${p.current.misses} wrong tr${p.current.misses === 1 ? 'y' : 'ies'}` : ''}
+                        </span>
+                      )}
                     </span>
                     <span className="hidden h-2 w-40 overflow-hidden rounded-sm bg-line sm:block">
                       <span className="block h-full bg-ok" style={{ width: `${(100 * (p.fixed + p.revealed)) / p.total}%` }} />
                     </span>
                     <span className="w-16 text-right font-pixel text-sm text-ok">{p.fixed + p.revealed}/{p.total}</span>
                     <span className="w-20 text-right font-pixel text-sm text-gold">{p.xp} XP</span>
+                    <button type="button" onClick={() => setPeek({ id: p.id, name: p.name })} className="border-2 border-line px-2 py-1 font-pixel text-[0.7rem] text-info hover:bg-hover" aria-label={`Peek at what ${p.name} is working on`}>👀 Peek</button>
                   </li>
                 )
               })}
@@ -299,6 +307,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
           </Panel>
         </div>
       </div>
+      {peek && <Peek call={call} player={peek} stamp={data} onClose={() => setPeek(null)} />}
     </main>
   )
 }
