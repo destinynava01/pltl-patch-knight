@@ -16,7 +16,7 @@ export const ZONES = [
   { id: 'arena', name: 'Arena Rankings', emoji: '🏆', topic: 'Sorting' },
   { id: 'tower', name: "Cartographer's Tower", emoji: '🗺️', topic: 'Searching' },
 ]
-export const BUGS_PER_ZONE = 4
+export const BUGS_PER_ZONE = 8
 
 // What each puzzle type is called on screen
 export const TYPE_LABEL = {

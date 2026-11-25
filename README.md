@@ -12,7 +12,7 @@ that part of the game and unlock the next zone.
 | 🏆 Arena Rankings | Sorting |
 | 🗺️ Cartographer's Tower | Searching |
 
-Four puzzle types: fill in the blank, find & fix the buggy line, put lines in order, and predict the output. Answers
+Each zone has 8 bugs (48 in all). Four puzzle types: fill in the blank, find & fix the buggy line, put lines in order, and predict the output. Answers
 are checked on the server (spacing doesn't matter; common mistakes get specific feedback). Hints cost XP; after
 three misses a student can ask to see the fix.
 

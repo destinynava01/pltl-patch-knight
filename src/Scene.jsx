@@ -12,7 +12,8 @@ function Glitchy({ broken, children, seed = 1, className = '' }) {
 }
 
 export default function Scene({ zone, fixed, total, flash }) {
-  const broken = (i) => i >= fixed // piece i is repaired once i+1 bugs are fixed
+  // Each scene has 4 pieces; piece i repairs once its share of the zone's bugs is fixed (2 bugs each with 8 bugs)
+  const broken = (i) => fixed < Math.ceil(((i + 1) * total) / 4)
   const patched = fixed >= total
   const Body = SCENES[zone.id] ?? Fallback
   return (
