@@ -121,10 +121,10 @@ function World({ saved, onLeave }) {
             <Knight color={player.color} size={32} />
             <span className="min-w-0">
               <span className="block truncate font-bold">{player.display_name}</span>
-              <span className="font-pixel text-[9px] text-info">WORLD MAP</span>
+              <span className="font-pixel text-[0.7rem] text-info">WORLD MAP</span>
             </span>
           </button>
-          <div className="flex items-center gap-4 font-pixel text-[10px]">
+          <div className="flex items-center gap-4 font-pixel text-xs">
             <span className="text-gold">XP {summary.xp}</span>
             <span className="text-ok">🐛 {summary.fixed + summary.revealed}/{summary.total}</span>
           </div>
@@ -177,7 +177,7 @@ function WorldMap({ zones, summary, onOpen }) {
           <li key={z.id}>
             <button type="button" disabled={!z.unlocked} onClick={() => onOpen(z.id)}
               className={`pixel-box block h-full w-full rounded-sm p-4 text-left transition ${z.unlocked ? 'bg-card hover:-translate-y-1 hover:bg-hover' : 'bg-code opacity-50'}`}>
-              <p className="flex items-center justify-between font-pixel text-[10px] text-muted">
+              <p className="flex items-center justify-between font-pixel text-xs text-muted">
                 <span>ZONE {i + 1}</span>
                 <span className={z.patched ? 'text-ok' : z.unlocked ? 'text-bad flicker' : ''}>{z.patched ? 'PATCHED' : z.unlocked ? 'GLITCHING' : '🔒 LOCKED'}</span>
               </p>
@@ -201,7 +201,7 @@ function ZoneView({ zone, flash, onBack, onOpenBug }) {
   const fixed = zone.bugs.filter((b) => b.status !== 'open').length
   return (
     <>
-      <button type="button" onClick={onBack} className="font-pixel text-[10px] text-info hover:underline">◀ World map</button>
+      <button type="button" onClick={onBack} className="font-pixel text-xs text-info hover:underline">◀ World map</button>
       <Scene zone={zone} fixed={fixed} total={zone.bugs.length} flash={flash} />
       <Panel>
         <Pixel>{zone.topic}</Pixel>
@@ -211,10 +211,10 @@ function ZoneView({ zone, flash, onBack, onOpenBug }) {
             <li key={b.id}>
               <button type="button" onClick={() => onOpenBug(b.id)} className="flex w-full items-center justify-between gap-3 rounded-sm border-2 border-line bg-panel px-3 py-2 text-left hover:bg-hover">
                 <span>
-                  <span className="font-pixel text-[9px] text-muted">BUG {i + 1} · {TYPE_LABEL[b.type]}</span>
+                  <span className="font-pixel text-[0.7rem] text-muted">BUG {i + 1} · {TYPE_LABEL[b.type]}</span>
                   <span className="block font-bold">{b.title}</span>
                 </span>
-                <span className={`shrink-0 font-pixel text-[10px] ${b.status === 'fixed' ? 'text-ok' : b.status === 'revealed' ? 'text-gold' : 'text-bad'}`}>
+                <span className={`shrink-0 font-pixel text-xs ${b.status === 'fixed' ? 'text-ok' : b.status === 'revealed' ? 'text-gold' : 'text-bad'}`}>
                   {b.status === 'fixed' ? '✔ FIXED' : b.status === 'revealed' ? '✔ SHOWN' : b.misses ? `${b.misses} MISS` : '🐛 OPEN'}
                 </span>
               </button>
@@ -268,11 +268,11 @@ function BugView({ saved, zone, bugId, flash, onResult, onBack, onNext }) {
 
   return (
     <>
-      <button type="button" onClick={onBack} className="font-pixel text-[10px] text-info hover:underline">◀ {zone.name}</button>
+      <button type="button" onClick={onBack} className="font-pixel text-xs text-info hover:underline">◀ {zone.name}</button>
       <div className="grid gap-4 lg:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-3">
           <Panel>
-            <p className="font-pixel text-[9px] text-muted">{zone.emoji} BUG {index + 1} · {TYPE_LABEL[bug.type]}</p>
+            <p className="font-pixel text-[0.7rem] text-muted">{zone.emoji} BUG {index + 1} · {TYPE_LABEL[bug.type]}</p>
             <h2 className="mt-1 text-xl font-bold">{bug.title}</h2>
             <p className="mt-1 text-bad">🐛 {bug.story}</p>
             <p className="mt-2 font-bold">{bug.prompt}</p>
@@ -295,14 +295,14 @@ function BugView({ saved, zone, bugId, flash, onResult, onBack, onNext }) {
             <Panel className="patch-in">
               <Pixel className={progress.status === 'fixed' ? 'text-ok' : 'text-gold'}>{progress.status === 'fixed' ? `✔ Patched! +${progress.xp} XP` : '✔ Fix shown'}</Pixel>
               <p className="mt-2">{data.fixed}</p>
-              <p className="mt-3 font-pixel text-[9px] text-muted">THE FIX</p>
+              <p className="mt-3 font-pixel text-[0.7rem] text-muted">THE FIX</p>
               <pre className="mt-1 overflow-x-auto rounded-sm bg-code p-2 font-mono text-sm text-ok">{data.solution}</pre>
               {data.hint && <p className="mt-2 text-sm text-muted">💡 {data.hint}</p>}
               {next ? <Button className="mt-4 w-full" onClick={() => onNext(next.id)}>Next bug ▶</Button> : <Button className="mt-4 w-full" onClick={onBack}>Back to the zone ▶</Button>}
             </Panel>
           ) : (
             <Panel>
-              <p className="font-pixel text-[9px] text-muted">TRIES MISSED: {progress.misses}</p>
+              <p className="font-pixel text-[0.7rem] text-muted">TRIES MISSED: {progress.misses}</p>
               {data.hint
                 ? <p className="mt-2">💡 {data.hint}</p>
                 : <Button variant="outline" className="mt-2 w-full" onClick={hint}>💡 Hint (−30 XP)</Button>}

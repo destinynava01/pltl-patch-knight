@@ -51,7 +51,7 @@ export default function Leader() {
     return (
       <CenterCard title={SITE_NAME}>
         <p className="mt-4"><span className="bob"><Knight size={72} /></span></p>
-        <p className="mt-3 font-pixel text-[10px] leading-relaxed text-gold">{SITE_TAGLINE}</p>
+        <p className="mt-3 font-pixel text-sm leading-relaxed text-gold">{SITE_TAGLINE}</p>
         <p className="mt-3 text-muted">
           A CS2 game in C++: every zone of this RPG is bugged (linked lists, pointers, classes, recursion, sorting,
           searching). Students fix the code to repair the world. Solo or in small groups.
@@ -73,7 +73,7 @@ function TopicPicker({ value, onChange }) {
     <div>
       <div className="flex items-baseline justify-between">
         <Pixel>Topics (zones)</Pixel>
-        <span className="flex gap-3 text-xs">
+        <span className="flex gap-3 text-sm">
           <button type="button" className="text-info hover:underline" onClick={() => onChange(ZONES.map((z) => z.id))}>All</button>
           <button type="button" className="text-info hover:underline" onClick={() => onChange([])}>None</button>
         </span>
@@ -89,14 +89,14 @@ function TopicPicker({ value, onChange }) {
                 <span className="text-xl">{z.emoji}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-bold">{z.topic}</span>
-                  <span className="block text-xs text-muted">{z.name} · {BUGS_PER_ZONE} bugs</span>
+                  <span className="block text-sm text-muted">{z.name} · {BUGS_PER_ZONE} bugs</span>
                 </span>
               </label>
             </li>
           )
         })}
       </ul>
-      <p className="mt-2 text-xs text-muted">Students unlock the chosen zones one after another, in this order.</p>
+      <p className="mt-2 text-sm text-muted">Students unlock the chosen zones one after another, in this order.</p>
     </div>
   )
 }
@@ -149,7 +149,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
           <Knight size={44} />
           <div>
             <h1 className="font-pixel text-lg text-ok">{SITE_NAME}</h1>
-            <p className="font-pixel text-[9px] text-muted">{inLobby ? 'LEADER LOBBY' : 'CLASS DASHBOARD'} · {data?.players.length ?? 0} KNIGHT{data?.players.length === 1 ? '' : 'S'}</p>
+            <p className="font-pixel text-[0.7rem] text-muted">{inLobby ? 'LEADER LOBBY' : 'CLASS DASHBOARD'} · {data?.players.length ?? 0} KNIGHT{data?.players.length === 1 ? '' : 'S'}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -165,7 +165,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
             <Pixel>Join code</Pixel>
             <p className="mt-2 font-pixel text-2xl tracking-widest text-gold">{session.joinCode}</p>
             <div className="mx-auto mt-3 w-fit rounded-sm bg-white p-3"><QRCodeSVG value={joinUrl} size={170} title={`Join code ${session.joinCode}`} /></div>
-            <p className="mt-2 text-xs text-muted">Scan to join, or go to {window.location.host}/join. Laptops work best for typing code.</p>
+            <p className="mt-2 text-sm text-muted">Scan to join, or go to {window.location.host}/join. Laptops work best for typing code.</p>
           </Panel>
 
           <Panel>
@@ -175,12 +175,12 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
                 {data.troubles.map((t) => (
                   <li key={t.id} className="rounded-sm bg-panel p-2 text-sm">
                     <p className="font-bold">{t.emoji} {t.title}</p>
-                    <p className="text-xs text-muted">{TYPE_LABEL[t.type]} · {t.wrong} wrong tr{t.wrong === 1 ? 'y' : 'ies'}{t.stuck ? ` · ${t.stuck} stuck now` : ''}</p>
+                    <p className="text-sm text-muted">{TYPE_LABEL[t.type]} · {t.wrong} wrong tr{t.wrong === 1 ? 'y' : 'ies'}{t.stuck ? ` · ${t.stuck} stuck now` : ''}</p>
                   </li>
                 ))}
               </ol>
             ) : <p className="mt-2 text-sm text-muted">No misses yet.</p>}
-            <p className="mt-2 text-xs text-muted">Good ones to go over at the board.</p>
+            <p className="mt-2 text-sm text-muted">Good ones to go over at the board.</p>
           </Panel>
         </div>
 
@@ -199,8 +199,8 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
             <Panel>
               {topics === null ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm"><span className="font-pixel text-[9px] text-info">TOPICS </span>{ZONES.filter((z) => data.game.zones.includes(z.id)).map((z) => `${z.emoji} ${z.topic}`).join(' · ')}</p>
-                  <button type="button" onClick={() => setTopics(data.game.zones)} className="font-pixel text-[9px] text-info hover:underline">Change topics</button>
+                  <p className="text-sm"><span className="font-pixel text-[0.7rem] text-info">TOPICS </span>{ZONES.filter((z) => data.game.zones.includes(z.id)).map((z) => `${z.emoji} ${z.topic}`).join(' · ')}</p>
+                  <button type="button" onClick={() => setTopics(data.game.zones)} className="font-pixel text-[0.7rem] text-info hover:underline">Change topics</button>
                 </div>
               ) : (
                 <>
@@ -209,7 +209,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
                     <Button disabled={busy || chosen.length === 0} onClick={() => saveTopics(false)}>{busy ? 'Saving…' : 'Save topics'}</Button>
                     <Button variant="outline" onClick={() => setTopics(null)}>Cancel</Button>
                   </div>
-                  <p className="mt-2 text-xs text-muted">Changes apply right away. Students keep the bugs they already fixed.</p>
+                  <p className="mt-2 text-sm text-muted">Changes apply right away. Students keep the bugs they already fixed.</p>
                 </>
               )}
             </Panel>
@@ -218,8 +218,8 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
             {data?.zones.map((z, i) => (
               <div key={z.id} className="pixel-box rounded-sm bg-card p-2 text-center">
                 <p className="text-2xl">{z.emoji}</p>
-                <p className="font-pixel text-[8px] text-muted">ZONE {i + 1}</p>
-                <p className="mt-1 truncate text-xs">{z.topic}</p>
+                <p className="font-pixel text-[0.7rem] text-muted">ZONE {i + 1}</p>
+                <p className="mt-1 truncate text-sm">{z.topic}</p>
                 <p className="mt-1 font-pixel text-sm text-gold">{z.players}</p>
               </div>
             ))}
@@ -234,17 +234,17 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
                 const idle = serverNow - Date.parse(p.last_seen) > 3 * 60 * 1000
                 return (
                   <li key={p.id} className="flex flex-wrap items-center gap-3 rounded-sm bg-panel px-3 py-2">
-                    <span className="w-6 text-right font-pixel text-[10px] text-muted">{rank + 1}</span>
+                    <span className="w-6 text-right font-pixel text-sm text-muted">{rank + 1}</span>
                     <Knight color={p.color} size={28} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-bold">{p.name}{idle && <span className="ml-2 text-xs font-normal text-muted">(idle)</span>}</span>
-                      <span className="text-xs text-muted">{p.finished ? '★ Patched the whole world' : p.zone ? `${p.zone.emoji} ${p.zone.name} · ${p.zone.fixed}/${p.zone.total}` : ''}</span>
+                      <span className="block truncate font-bold">{p.name}{idle && <span className="ml-2 text-sm font-normal text-muted">(idle)</span>}</span>
+                      <span className="text-sm text-muted">{p.finished ? '★ Patched the whole world' : p.zone ? `${p.zone.emoji} ${p.zone.name} · ${p.zone.fixed}/${p.zone.total}` : ''}</span>
                     </span>
                     <span className="hidden h-2 w-40 overflow-hidden rounded-sm bg-line sm:block">
                       <span className="block h-full bg-ok" style={{ width: `${(100 * (p.fixed + p.revealed)) / p.total}%` }} />
                     </span>
-                    <span className="w-16 text-right font-pixel text-[10px] text-ok">{p.fixed + p.revealed}/{p.total}</span>
-                    <span className="w-20 text-right font-pixel text-[10px] text-gold">{p.xp} XP</span>
+                    <span className="w-16 text-right font-pixel text-sm text-ok">{p.fixed + p.revealed}/{p.total}</span>
+                    <span className="w-20 text-right font-pixel text-sm text-gold">{p.xp} XP</span>
                   </li>
                 )
               })}

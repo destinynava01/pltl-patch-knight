@@ -83,3 +83,8 @@ body { font-family: var(--font-body); background: var(--color-board); color: var
 @media (prefers-reduced-motion: reduce) {
   .glitch, .glitch-once, .flicker, .patch-in, .bob { animation: none; }
 }
+
+/* Bigger screens (projectors, big monitors): everything a little larger so it reads from the back of the room.
+   Phones and laptops are unchanged. */
+@media (min-width: 1600px) { html { font-size: 106.25%; } }
+@media (min-width: 1900px) { html { font-size: 112.5%; } }

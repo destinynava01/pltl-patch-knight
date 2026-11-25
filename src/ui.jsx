@@ -5,7 +5,7 @@ export function Panel({ children, className = '' }) {
 }
 
 export function Pixel({ children, className = '' }) {
-  return <p className={`font-pixel text-[10px] uppercase leading-relaxed tracking-wider text-info ${className}`}>{children}</p>
+  return <p className={`font-pixel text-xs uppercase leading-relaxed tracking-wider text-info ${className}`}>{children}</p>
 }
 
 const BUTTONS = {
@@ -18,7 +18,7 @@ const BUTTONS = {
 export function Button({ variant = 'primary', className = '', ...props }) {
   return (
     <button
-      className={`rounded-sm px-5 py-3 font-pixel text-[11px] uppercase tracking-wider transition active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-40 ${BUTTONS[variant]} ${className}`}
+      className={`rounded-sm px-5 py-3 font-pixel text-[0.8rem] uppercase tracking-wider transition active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-40 ${BUTTONS[variant]} ${className}`}
       {...props}
     />
   )

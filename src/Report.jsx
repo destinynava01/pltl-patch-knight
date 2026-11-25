@@ -36,7 +36,7 @@ export default function Report({ call, onNewGame }) {
           <Knight size={44} />
           <div>
             <h1 className="font-pixel text-lg text-ok">{SITE_NAME} · Report</h1>
-            <p className="font-pixel text-[9px] text-muted">{report.players.length} KNIGHTS · {report.bugs.length} BUGS</p>
+            <p className="font-pixel text-[0.7rem] text-muted">{report.players.length} KNIGHTS · {report.bugs.length} BUGS</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -50,7 +50,7 @@ export default function Report({ call, onNewGame }) {
       <nav className="mx-auto mt-4 flex max-w-6xl gap-2">
         {[['bugs', 'Bugs'], ['knights', 'Knights']].map(([id, label]) => (
           <button key={id} type="button" onClick={() => setTab(id)}
-            className={`rounded-sm border-2 px-4 py-2 font-pixel text-[10px] ${tab === id ? 'border-ok bg-ok-soft text-ok' : 'border-line bg-panel hover:bg-hover'}`}>{label}</button>
+            className={`rounded-sm border-2 px-4 py-2 font-pixel text-xs ${tab === id ? 'border-ok bg-ok-soft text-ok' : 'border-line bg-panel hover:bg-hover'}`}>{label}</button>
         ))}
       </nav>
 
@@ -63,13 +63,13 @@ export default function Report({ call, onNewGame }) {
       {tab === 'knights' && (
         <Panel className="mx-auto mt-4 max-w-6xl overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="font-pixel text-[9px] text-muted">
+            <thead className="font-pixel text-[0.7rem] text-muted">
               <tr><th className="p-2">#</th><th className="p-2">Knight</th><th className="p-2">Bugs fixed</th><th className="p-2">First try</th><th className="p-2">Fix shown</th><th className="p-2">Hints</th><th className="p-2">Wrong tries</th><th className="p-2">Zones</th><th className="p-2">XP</th></tr>
             </thead>
             <tbody>
               {ranked.map((p, i) => (
                 <tr key={p.name} className="border-t border-line">
-                  <td className="p-2 font-pixel text-[10px] text-muted">{i + 1}</td>
+                  <td className="p-2 font-pixel text-xs text-muted">{i + 1}</td>
                   <td className="p-2 font-bold">{p.name}</td>
                   <td className="p-2 text-ok">{p.fixed}</td>
                   <td className="p-2">{p.first_try}</td>
@@ -77,7 +77,7 @@ export default function Report({ call, onNewGame }) {
                   <td className="p-2">{p.hints}</td>
                   <td className="p-2 text-bad">{p.wrong}</td>
                   <td className="p-2">{p.zones_patched}/{p.zones_total}</td>
-                  <td className="p-2 font-pixel text-[10px] text-gold">{p.xp}</td>
+                  <td className="p-2 font-pixel text-xs text-gold">{p.xp}</td>
                 </tr>
               ))}
             </tbody>
@@ -95,10 +95,10 @@ function BugReport({ b }) {
     <li className="pixel-box rounded-sm bg-card">
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full flex-wrap items-center justify-between gap-3 p-3 text-left hover:bg-hover">
         <span>
-          <span className="font-pixel text-[9px] text-muted">{b.emoji} {b.zone} · {TYPE_LABEL[b.type]}</span>
+          <span className="font-pixel text-[0.7rem] text-muted">{b.emoji} {b.zone} · {TYPE_LABEL[b.type]}</span>
           <span className="block font-bold">{b.title}</span>
         </span>
-        <span className="flex gap-4 font-pixel text-[9px]">
+        <span className="flex gap-4 font-pixel text-[0.7rem]">
           <span className="text-muted">TRIED {b.tried}</span>
           <span className="text-ok">FIRST TRY {rate === null ? '—' : `${rate}%`}</span>
           <span className="text-gold">SHOWN {b.revealed}</span>
@@ -116,10 +116,10 @@ function BugReport({ b }) {
             </pre>
           </div>
           <div className="space-y-2 text-sm">
-            <p className="font-pixel text-[9px] text-ok">THE FIX</p>
+            <p className="font-pixel text-[0.7rem] text-ok">THE FIX</p>
             <pre className="overflow-x-auto rounded-sm bg-code p-2 font-mono text-xs text-ok">{b.solution}</pre>
             <p className="text-muted">💡 {b.hint}</p>
-            <p className="font-pixel text-[9px] text-bad">MOST COMMON WRONG ANSWERS</p>
+            <p className="font-pixel text-[0.7rem] text-bad">MOST COMMON WRONG ANSWERS</p>
             {b.common_wrong.length ? (
               <ul className="space-y-1">{b.common_wrong.map((w) => <li key={w.answer} className="font-mono text-xs"><span className="text-bad">×{w.count}</span> {w.answer}</li>)}</ul>
             ) : <p className="text-xs text-muted">None.</p>}

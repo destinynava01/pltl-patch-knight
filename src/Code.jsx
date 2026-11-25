@@ -111,8 +111,8 @@ function Order({ bug, busy, done, onSubmit }) {
               <span className="flex-1 whitespace-pre"><Highlight text={l.text} /></span>
               {!done && (
                 <span className="ml-3 flex gap-1">
-                  <button type="button" onClick={() => move(i, -1)} disabled={i === 0 || busy} aria-label={`Move line ${n} up`} className="rounded-sm border border-line px-2 font-pixel text-[10px] hover:bg-hover disabled:opacity-30">▲</button>
-                  <button type="button" onClick={() => move(i, 1)} disabled={i === lines.length - 1 || busy} aria-label={`Move line ${n} down`} className="rounded-sm border border-line px-2 font-pixel text-[10px] hover:bg-hover disabled:opacity-30">▼</button>
+                  <button type="button" onClick={() => move(i, -1)} disabled={i === 0 || busy} aria-label={`Move line ${n} up`} className="rounded-sm border border-line px-2 font-pixel text-xs hover:bg-hover disabled:opacity-30">▲</button>
+                  <button type="button" onClick={() => move(i, 1)} disabled={i === lines.length - 1 || busy} aria-label={`Move line ${n} down`} className="rounded-sm border border-line px-2 font-pixel text-xs hover:bg-hover disabled:opacity-30">▼</button>
                 </span>
               )}
             </div>
@@ -133,7 +133,7 @@ function Output({ bug, busy, done, onSubmit }) {
       <Frame>{bug.code.map((text, i) => <Line key={i} n={i + 1}><Highlight text={text} /></Line>)}</Frame>
       {!done && (
         <>
-          <label className="mt-3 block font-pixel text-[10px] uppercase tracking-wider text-info" htmlFor="output">Console output</label>
+          <label className="mt-3 block font-pixel text-xs uppercase tracking-wider text-info" htmlFor="output">Console output</label>
           <input id="output" className="mt-1 w-full rounded-sm border-2 border-line bg-code px-3 py-2 font-mono text-ok outline-none focus:border-ok"
             value={value} onChange={(e) => setValue(e.target.value)} placeholder="> what prints?" autoComplete="off" autoCapitalize="none" spellCheck={false} />
           <Button className="mt-3 w-full" disabled={busy || !value.trim()}>{busy ? 'Running…' : '▶ Check output'}</Button>

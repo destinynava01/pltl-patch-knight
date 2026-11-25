@@ -19,8 +19,8 @@ export default function Scene({ zone, fixed, total, flash }) {
   return (
     <section className={`crt pixel-box relative overflow-hidden rounded-sm bg-code p-4 ${String(flash ?? '').startsWith('wrong') ? 'glitch-once' : ''}`} key={flash ?? 'scene'}>
       <div className="flex items-center justify-between gap-2">
-        <p className="font-pixel text-[10px] uppercase tracking-wider text-info">{zone.emoji} {zone.name}</p>
-        <p className={`font-pixel text-[10px] ${patched ? 'text-ok' : 'text-bad flicker'}`}>{patched ? 'PATCHED' : `${fixed}/${total} FIXED`}</p>
+        <p className="font-pixel text-xs uppercase tracking-wider text-info">{zone.emoji} {zone.name}</p>
+        <p className={`font-pixel text-xs ${patched ? 'text-ok' : 'text-bad flicker'}`}>{patched ? 'PATCHED' : `${fixed}/${total} FIXED`}</p>
       </div>
       <div className="mt-3 min-h-28">
         <Body broken={broken} patched={patched} />
