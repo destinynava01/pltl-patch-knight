@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Highlight } from './cpp'
 import { SITE_NAME, TYPE_LABEL } from './config'
 import { Button, Knight, Panel } from './ui'
+import ReportProblem from './ReportProblem'
 
 // After the game: how the class did on every bug (with the fix and the most common wrong answers, to go over at
 // the board), every knight's results, and the Excel download.
@@ -56,7 +57,7 @@ export default function Report({ call, onNewGame }) {
 
       {tab === 'bugs' && (
         <ul className="mx-auto mt-4 max-w-6xl space-y-3">
-          {report.bugs.map((b) => <BugReport key={b.id} b={b} />)}
+          {report.bugs.map((b) => <BugReport key={b.id} b={b} call={call} />)}
         </ul>
       )}
 
@@ -88,7 +89,7 @@ export default function Report({ call, onNewGame }) {
   )
 }
 
-function BugReport({ b }) {
+function BugReport({ b, call }) {
   const [open, setOpen] = useState(false)
   const rate = b.tried ? Math.round((100 * b.first_try) / b.tried) : null
   return (
@@ -119,6 +120,7 @@ function BugReport({ b }) {
             <p className="font-pixel text-[0.7rem] text-ok">THE FIX</p>
             <pre className="overflow-x-auto rounded-sm bg-code p-2 font-mono text-xs text-ok">{b.solution}</pre>
             <p className="text-muted">💡 {b.hint}</p>
+            <ReportProblem call={call} location={`${b.zone}: ${b.title}`} question={[b.story, ...b.code].join('\n')} answer={b.solution} />
             <p className="font-pixel text-[0.7rem] text-bad">MOST COMMON WRONG ANSWERS</p>
             {b.common_wrong.length ? (
               <ul className="space-y-1">{b.common_wrong.map((w) => <li key={w.answer} className="font-mono text-xs"><span className="text-bad">×{w.count}</span> {w.answer}</li>)}</ul>

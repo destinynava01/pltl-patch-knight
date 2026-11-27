@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { TYPE_LABEL } from './config'
 import { Highlight } from './cpp'
 import { Button, Pixel } from './ui'
+import ReportProblem from './ReportProblem'
 
 // The leader's peek at one knight: the bug they have open, exactly as their screen shows it, how they're doing on
 // it, and every answer they've tried. The hint and the fix stay behind buttons, since the dashboard is often on
@@ -87,6 +88,7 @@ export default function Peek({ call, player, stamp, onClose }) {
             </div>
             {show.hint && <p className="mt-2 rounded-sm bg-info-soft px-3 py-2 text-sm">💡 {data.hint}</p>}
             {show.fix && <pre className="mt-2 overflow-x-auto rounded-sm bg-code p-2 font-mono text-sm text-ok">{data.solution}</pre>}
+            <ReportProblem call={call} location={`${player.name} · ${data.zone.name}: ${b.title}`} question={`${b.story}\n${b.prompt}`} answer={data.solution ?? ''} className="mt-3 block" />
           </>
         )}
       </section>
