@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import HowToPlay from './HowToPlay'
 import { SLIDES as HOW_TO_SLIDES } from './howToSlides'
 import { QRCodeSVG } from 'qrcode.react'
-import { pkGame, watchGame } from './api'
+import { callFunction, pkGame, watchGame } from './api'
 import Peek from './Peek'
 import Report from './Report'
 import { BANK_SIZE, CAPS, COURSES, DEFAULT_CAP, HUB_URL, SITE_NAME, SITE_TAGLINE, splitCap, TYPE_LABEL, ZONES } from './config'
@@ -60,7 +60,7 @@ export default function Leader() {
         </p>
         <Button className="mt-6" disabled={busy} onClick={create}>{busy ? 'Booting…' : '▶ Open the lobby'}</Button>
         {error && <p className="mt-3 font-bold text-bad">{error}</p>}
-        <a href={HUB_URL} className="mt-4 block text-sm text-info hover:underline">← All games</a>
+        <p className="mt-4 text-sm"><a href={HUB_URL} className="text-info hover:underline">← All games</a><span className="mx-2 text-muted">·</span><a href="/submit" className="text-info hover:underline">Submit bugs</a><span className="mx-2 text-muted">·</span><a href="/review" className="text-info hover:underline">Review queue</a></p>
       </CenterCard>
     )
   }
@@ -152,6 +152,9 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
   const [cap, setCap] = useState(null) // bugs per student, while it's being picked in the lobby (null = the saved one)
   const [busy, setBusy] = useState(false)
   const [peek, setPeek] = useState(null) // the knight the leader is peeking at
+  const [leaderBugs, setLeaderBugs] = useState(false) // mix the approved leader bugs into this game
+  const [approvedBugs, setApprovedBugs] = useState(null)
+  useEffect(() => { callFunction('pk-bugs', { action: 'count' }, '').then((d) => setApprovedBugs(d.approved)).catch(() => setApprovedBugs(null)) }, [])
 
   const load = useCallback(() => call({ action: 'dashboard' }).then((d) => { setData({ ...d, offset: Date.parse(d.server_now) - Date.now() }); setError('') }).catch((e) => setError(e.message)), [call])
   useEffect(() => {
@@ -174,7 +177,7 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
     setError('')
     try {
       // The number of bugs per student is set in the lobby; after the start only the topics can change
-      await call({ action: start ? 'start_game' : 'set_zones', zones: chosen, ...(inLobby ? { question_cap: chosenCap } : {}) })
+      await call({ action: start ? 'start_game' : 'set_zones', zones: chosen, ...(inLobby ? { question_cap: chosenCap } : {}), ...(start ? { leader_bugs: leaderBugs } : {}) })
       setTopics(null)
       setCap(null)
       await load()
@@ -239,6 +242,12 @@ function Dashboard({ session, call, onEnded, onNewGame }) {
               <p className="mt-1 text-sm text-muted">Students can join now; they wait on a &ldquo;get ready&rdquo; screen until you start.</p>
               <div className="mt-3"><TopicPicker value={chosen} onChange={setTopics} /></div>
               <div className="mt-4"><CapPicker value={chosenCap} onChange={setCap} zoneCount={chosen.length} /></div>
+              <label className="mt-4 flex items-start gap-3 rounded-sm border-2 border-line bg-panel p-3 text-sm">
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-[#3ddc84]" checked={leaderBugs} disabled={!approvedBugs} onChange={(e) => setLeaderBugs(e.target.checked)} />
+                <span><b>Use leader bugs</b> <span className="text-muted">({approvedBugs ?? 0} approved)</span><br />
+                  <span className="text-muted">Mix the bugs other leaders wrote into each topic&apos;s bank. </span>
+                  <a href="/submit" target="_blank" rel="noreferrer" className="font-bold text-info hover:underline">Write one</a><span className="text-muted"> · </span><a href="/review" target="_blank" rel="noreferrer" className="font-bold text-info hover:underline">Review queue</a></span>
+              </label>
               <Button className="mt-4 w-full" disabled={busy || chosen.length === 0} onClick={() => saveTopics(true)}>
                 {busy ? 'Starting…' : chosen.length === 0 ? 'Pick at least one topic' : `▶ Start the game (${chosenCap} bugs per student)`}
               </Button>

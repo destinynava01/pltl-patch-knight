@@ -1,3 +1,4 @@
+import BugSubmit, { BugReviewPage } from './Bugs'
 import Leader from './Leader'
 import StudentJoin from './StudentJoin'
 import { isConfigured } from './supabase'
@@ -6,6 +7,7 @@ import { CenterCard } from './ui'
 // Routes:
 //   /       the leader: start a game and watch the class dashboard (then the report)
 //   /join   students (solo or a small group on one screen): the world map and the bugs
+//   /submit leaders write a bug of their own;  /review  reviewers approve them (and browse the built-in bugs)
 // The bugs and their answers live on the server (supabase _shared/patchKnight.ts).
 export default function App() {
   const path = window.location.pathname.replace(/\/+$/, '')
@@ -16,5 +18,7 @@ export default function App() {
       </CenterCard>
     )
   }
+  if (path === '/submit') return <BugSubmit />
+  if (path === '/review') return <BugReviewPage />
   return path === '/join' ? <StudentJoin /> : <Leader />
 }
