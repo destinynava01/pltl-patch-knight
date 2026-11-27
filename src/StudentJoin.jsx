@@ -60,7 +60,7 @@ function JoinForm({ onJoined, notice }) {
         </div>
         <div>
           <Pixel>Knight name</Pixel>
-          <input className={`${field} mt-2`} maxLength={60} placeholder="Maria G.  or  Maria & José" value={name} onChange={(e) => setName(e.target.value)} required />
+          <input className={`${field} mt-2`} maxLength={60} placeholder="Your name (or two names)" value={name} onChange={(e) => setName(e.target.value)} required />
           <p className="mt-1 text-xs text-muted">Playing as a small group on one screen? Put everyone&apos;s names.</p>
         </div>
         <div>
