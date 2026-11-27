@@ -8,6 +8,7 @@ import Report from './Report'
 import { BANK_SIZE, CAPS, COURSES, DEFAULT_CAP, HUB_URL, SITE_NAME, SITE_TAGLINE, splitCap, TYPE_LABEL, ZONES } from './config'
 import { readSession, saveSession } from './session'
 import { Button, CenterCard, Knight, Panel, Pixel } from './ui'
+import { SLIDES as LANDING_SLIDES } from './howToSlides'
 
 // The leader: open a lobby (students join with the code while the leader picks the topics), start the game,
 // watch the class dashboard on the projector, then end it for the report. The game is remembered in this tab.
@@ -53,6 +54,7 @@ export default function Leader() {
       <CenterCard title={SITE_NAME}>
         <p className="mt-4"><span className="bob"><Knight size={72} /></span></p>
         <p className="mt-3 font-pixel text-sm leading-relaxed text-gold">{SITE_TAGLINE}</p>
+        <div className="mt-6 flex justify-center text-left [&>*]:max-w-full">{LANDING_SLIDES[0].art}</div>
         <p className="mt-3 text-muted">
           A C++ game for CS1 review and CS2: every zone of this RPG is bugged (variables, if/else, loops, functions,
           arrays, then linked lists, pointers, classes, inheritance, templates, exceptions, recursion, stacks & queues, sorting, searching). Students fix the code to repair
