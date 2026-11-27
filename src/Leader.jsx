@@ -55,7 +55,7 @@ export default function Leader() {
         <p className="mt-3 font-pixel text-sm leading-relaxed text-gold">{SITE_TAGLINE}</p>
         <p className="mt-3 text-muted">
           A C++ game for CS1 review and CS2: every zone of this RPG is bugged (variables, if/else, loops, functions,
-          arrays, then linked lists, pointers, classes, recursion, sorting, searching). Students fix the code to repair
+          arrays, then linked lists, pointers, classes, inheritance, templates, exceptions, recursion, stacks & queues, sorting, searching). Students fix the code to repair
           the world. Solo or in small groups.
         </p>
         <Button className="mt-6" disabled={busy} onClick={create}>{busy ? 'Booting…' : '▶ Open the lobby'}</Button>

@@ -110,6 +110,49 @@ const SCENES = {
       <p className={row}>🛡️ Shield <span>DEF <Glitchy broken={broken(3)} seed={4}>12</Glitchy></span></p>
     </div>
   ),
+  // The royal family (inheritance): heirs remember their names, dragons roar, the army adds up, quests get dates
+  keep: ({ broken }) => (
+    <div className="space-y-1.5 font-mono text-sm">
+      <p className={row}>👑 Heir <span><Glitchy broken={broken(0)}>Sir Ada</Glitchy></span></p>
+      <p className={row}>🐉 Dragon <span><Glitchy broken={broken(1)} seed={2}>ROAR!</Glitchy></span></p>
+      <p className={row}>⚔️ Army <span>ATK <Glitchy broken={broken(2)} seed={3}>9</Glitchy></span></p>
+      <p className={row}>📜 Quest <span>due <Glitchy broken={broken(3)} seed={4}>5/1/2025</Glitchy></span></p>
+    </div>
+  ),
+  // The forge (templates): one mold for every type
+  forge: ({ broken }) => (
+    <div className="grid grid-cols-2 gap-2 font-mono text-sm">
+      <p className={row}>⚒️ cube(3) <Glitchy broken={broken(0)}>27</Glitchy></p>
+      <p className={row}>⚒️ cube(0.5) <Glitchy broken={broken(1)} seed={2}>0.125</Glitchy></p>
+      <p className={row}>🪶 lightest <Glitchy broken={broken(2)} seed={3}>Ada</Glitchy></p>
+      <p className={row}>📦 Chest&lt;string&gt; <Glitchy broken={broken(3)} seed={4}>scale</Glitchy></p>
+    </div>
+  ),
+  // The trap hall (exceptions): each trap is caught instead of crashing the game
+  traps: ({ broken, patched }) => (
+    <div className="grid grid-cols-2 gap-2">
+      {[['🪤', 'Pit'], ['🔥', 'Fire'], ['🗡️', 'Spikes'], ['🌀', 'Wild magic']].map(([e, n], i) => (
+        <p key={n} className={`${row} justify-start gap-2`}>
+          <span className={broken(i) ? 'glitch' : patched ? 'bob' : ''}>{e}</span> {n}: <Glitchy broken={broken(i)} seed={i + 5}>caught</Glitchy>
+        </p>
+      ))}
+    </div>
+  ),
+  // The tavern (stacks & queues): the plate pile and the line at the bar
+  tavern: ({ broken }) => (
+    <div className="flex items-center gap-4">
+      <div className="flex shrink-0 flex-col-reverse items-center gap-0.5" aria-hidden="true">
+        {[0, 1, 2, 3].map((i) => <div key={i} className={`h-2 w-14 rounded-full ${broken(Math.min(i, 3)) ? 'flicker bg-bad/50' : 'bg-ok/60'}`} />)}
+        <p className="mb-1 text-xl">🍽️</p>
+      </div>
+      <div className="space-y-1 font-mono text-sm">
+        <p>top plate: <Glitchy broken={broken(0)}>15</Glitchy></p>
+        <p>next in line: <Glitchy broken={broken(1)} seed={2}>1</Glitchy></p>
+        <p>seats: <Glitchy broken={broken(2)} seed={3}>0 1 2 3 0</Glitchy></p>
+        <p>bill: <Glitchy broken={broken(3)} seed={4}>14 gold</Glitchy></p>
+      </div>
+    </div>
+  ),
   // Rooms within rooms (recursion): nested squares stop flickering as bugs are fixed
   dungeon: ({ broken, patched }) => (
     <div className="flex items-center gap-4">

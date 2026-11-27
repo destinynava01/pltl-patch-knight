@@ -17,7 +17,11 @@ export const ZONES = [
   { id: 'inventory', name: 'Inventory Caves', emoji: '🎒', topic: 'Linked lists', course: 'CS2' },
   { id: 'armory', name: 'Armory of Pointers', emoji: '🗡️', topic: 'Pointers & dynamic memory', course: 'CS2' },
   { id: 'guild', name: 'Guild Hall', emoji: '🧙', topic: 'Classes & constructors', course: 'CS2' },
+  { id: 'keep', name: 'Bloodline Keep', emoji: '👑', topic: 'Inheritance & virtual functions', course: 'CS2' },
+  { id: 'forge', name: 'Template Forge', emoji: '⚒️', topic: 'Templates', course: 'CS2' },
+  { id: 'traps', name: 'Trap Hall', emoji: '💣', topic: 'Exceptions (try, throw, catch)', course: 'CS2' },
   { id: 'dungeon', name: 'Recursive Dungeon', emoji: '🏰', topic: 'Recursion', course: 'CS2' },
+  { id: 'tavern', name: 'The Tavern', emoji: '🍺', topic: 'Stacks & queues', course: 'CS2' },
   { id: 'arena', name: 'Arena Rankings', emoji: '🏆', topic: 'Sorting', course: 'CS2' },
   { id: 'tower', name: "Cartographer's Tower", emoji: '🗺️', topic: 'Searching', course: 'CS2' },
 ]
