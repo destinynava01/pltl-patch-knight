@@ -6,6 +6,7 @@ import { SITE_NAME, TYPE_LABEL, ZONES } from './config'
 import { supabase } from './supabase'
 import { Button, Panel, Pixel } from './ui'
 import { useSession } from './useSession'
+import GameReports from './GameReports'
 
 // Leader bugs. /submit: a leader writes a bug of their own (fill in a blank, fix a line, put lines in order, or
 // predict the output) with a live preview in the real code panel, and sends it for review. /review: reviewers sign
@@ -285,7 +286,7 @@ function ReviewList({ email }) {
   const [reload, setReload] = useState(0)
   const done = useCallback(() => setReload((n) => n + 1), [])
   useEffect(() => {
-    if (status === 'builtin') return
+    if (status === 'builtin' || status === 'reports') return
     review({ action: 'list_pk_bugs', status }, 'Could not load bugs.').then((d) => { setRows(d.bugs); setError('') }).catch((e) => setError(e.message))
   }, [status, reload])
   return (
@@ -294,10 +295,11 @@ function ReviewList({ email }) {
         <div className="flex flex-wrap gap-2">
           {['pending', 'approved', 'rejected', 'retired'].map((st) => <button key={st} type="button" onClick={() => setStatus(st)} className={`${tab(status === st)} capitalize`}>{st}</button>)}
           <button type="button" onClick={() => setStatus('builtin')} className={tab(status === 'builtin')}>⚙️ Built in</button>
+          <button type="button" onClick={() => setStatus('reports')} className={tab(status === 'reports')}>🚩 Problem reports</button>
         </div>
         <p className="text-sm text-muted">{email} · <button type="button" onClick={() => supabase.auth.signOut()} className="font-bold text-info">Sign out</button> · <a href="/submit" className="font-bold text-info">Write one</a></p>
       </div>
-      {status === 'builtin' ? <BuiltIn /> : (
+      {status === 'reports' ? <GameReports call={review} game="patchknight" /> : status === 'builtin' ? <BuiltIn /> : (
         <>
           {error && <p className="rounded-sm bg-bad-soft px-3 py-2 text-bad">{error}</p>}
           {!rows && !error && <p className="text-muted">Loading…</p>}
